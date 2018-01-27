@@ -1,0 +1,13 @@
+CFLAGS=-c -Wall -O2
+LIBS = -lm -laccel
+
+all: test
+
+test: main.o
+	$(CC) main.o $(LIBS) -o test
+
+main.o: main.c
+	$(CC) $(CFLAGS) main.c
+
+clean:
+	rm *.o test

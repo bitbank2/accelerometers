@@ -12,12 +12,13 @@
 int main(int argc, char *argv[])
 {
 int i;
-int X, Y, Z;
+int X, Y, Z, GX, GY, GZ;
 
 
-	i = accelInit(1, 0x53, TYPE_ADXL345);
-//	i = accelInit(1, 0x69, TYPE_MPU6050);
+//	i = accelInit(1, 0x53, TYPE_ADXL345);
+//	i = accelInit(1, 0x68, TYPE_MPU6050);
 //	i = accelInit(1, 0x6a, TYPE_LSM9DS1);
+	i = accelInit(1, 0x69, TYPE_BMI160);
 	if (i != 0)
 	{
 		return -1; // problem - quit
@@ -26,13 +27,12 @@ int X, Y, Z;
 	printf("Accelerometer device successfully opened.\n");
 	usleep(1000000); // wait for data to settle for first read
 
-	for (i=0; i<120; i++) // read values twice a second for 1 minute
+	for (i=0; i<12000; i++) // read values twice a second for 1 minute
 	{
 		accelReadAValues(&X, &Y, &Z);
-		printf("Accel X/Y/Z = %d,%d,%d\n", X, Y, Z);
-		accelReadGValues(&X, &Y, &Z);
-		printf("Gyro X/Y/Z = %d,%d,%d\n", X, Y, Z);
-		usleep(500000);
+		accelReadGValues(&GX, &GY, &GZ);
+		printf("G:%06d,%06d,%06d  A:%06d,%06d,%06d\n", GX,GY,GZ,X,Y,Z);
+	//	usleep(100000);
 	}
 	accelShutdown();
 

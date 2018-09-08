@@ -41,5 +41,6 @@ int accelReadGValues(int *X, int *Y, int *Z);
 #define TYPE_ADXL345 1
 #define TYPE_MPU6050 2
 #define TYPE_LSM9DS1 3
+#define TYPE_BMI160  4
 
 #endif // __ACCEL__

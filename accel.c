@@ -43,7 +43,7 @@ int i, rc;
 char filename[32];
 unsigned char ucTemp[16];
 
-	if (iAccelType != TYPE_LSM9DS1 && iAccelType != TYPE_ADXL345 && iAccelType != TYPE_MPU6050)
+	if (iAccelType != TYPE_LSM9DS1 && iAccelType != TYPE_ADXL345 && iAccelType != TYPE_MPU6050 && iAccelType != TYPE_BMI160)
 		return -1;
  
 	iType = iAccelType;
@@ -111,6 +111,27 @@ unsigned char ucTemp[16];
 		rc = write(file_i2c, ucTemp, 2);
 		if (rc != 2) {};
 		}
+	else if (iType == TYPE_BMI160)
+	{
+                ucTemp[0] = 0x00; // get CHIPID
+                rc = write(file_i2c, ucTemp, 1);
+                i = read(file_i2c, ucTemp, 1);
+                if (rc < 0 || i != 1 || ucTemp[0] != 0xD1)
+                {
+                        printf("Error, ID doesn't match 0xD1; wrong device?\n");
+                        close(file_i2c);
+                        file_i2c = -1;
+                        return -1;
+                }
+		ucTemp[0] = 0x7e; // send command
+		ucTemp[1] = 0x11; // set accelerometer to normal mode
+		rc = write(file_i2c, ucTemp, 2);
+		usleep(4000); // give it 4ms to occur
+		ucTemp[0] = 0x7e; // command
+		ucTemp[1] = 0x15; // set gyroscope to normal power mode
+		rc = write(file_i2c, ucTemp, 2);
+		if (rc != 2) {};
+	} // BMI160
 	else // MPU6050
 	{
 		ucTemp[0] = 0x75; // get ID
@@ -161,6 +182,8 @@ int i,rc, x, y, z;
 		return -1; // ADXL345 doesn't have a gyroscope
 	if (iType == TYPE_LSM9DS1)
 		ucTemp[0] = 0x18;
+	else if (iType == TYPE_BMI160)
+		ucTemp[0] = 0xc;
 	else // MPU6050
 		ucTemp[0] = 0x43;
 	rc = write(file_i2c, ucTemp, 1); // write address of register to read
@@ -169,7 +192,7 @@ int i,rc, x, y, z;
 	{
 		return -1; // something went wrong
 	}
-	if (iType == TYPE_LSM9DS1)
+	if (iType == TYPE_LSM9DS1 || iType == TYPE_BMI160)
 	{
 		x = (ucTemp[1] << 8) + ucTemp[0];
 		y = (ucTemp[3] << 8) + ucTemp[2];
@@ -210,6 +233,8 @@ int i,rc, x, y, z;
 		ucTemp[0] = 0x28;
 	else if (iType == TYPE_ADXL345)
 		ucTemp[0] = 0x32; // start of axis data
+	else if (iType == TYPE_BMI160)
+		ucTemp[0] = 0x12;
 	else // MPU6050
 		ucTemp[0] = 0x3b;
 	rc = write(file_i2c, ucTemp, 1); // write address of register to read
@@ -218,7 +243,7 @@ int i,rc, x, y, z;
 	{
 		return -1; // something went wrong
 	}
-	if (iType == TYPE_LSM9DS1 || iType == TYPE_ADXL345)
+	if (iType == TYPE_LSM9DS1 || iType == TYPE_ADXL345 || iType == TYPE_BMI160)
 	{
 		x = (ucTemp[1] << 8) + ucTemp[0];
 		y = (ucTemp[3] << 8) + ucTemp[2];

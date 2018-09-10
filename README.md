@@ -1,7 +1,7 @@
 ## Accelerometers
 
-A simple C library to iniitalize and read the data from 3 popular
-accelerometer chips (ADXL345, MPU6050 and LSM9DS1). This library uses the I2C
+A simple C library to iniitalize and read the data from 4 popular
+accelerometer chips (ADXL345, MPU6050, BMI160 and LSM9DS1). This library uses the I2C
 kernel driver to access the sensors (/dev/i2c*) and therefore needs to run with
 root privilege. A sample program is provided to demonstrate its use.<br>
 <br>

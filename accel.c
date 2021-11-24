@@ -43,7 +43,7 @@ int i, rc;
 char filename[32];
 unsigned char ucTemp[16];
 
-	if (iAccelType != TYPE_LSM9DS1 && iAccelType != TYPE_ADXL345 && iAccelType != TYPE_MPU6050 && iAccelType != TYPE_BMI160)
+	if (iAccelType < 1 || iAccelType >= TYPE_COUNT)
 		return -1;
  
 	iType = iAccelType;
@@ -132,7 +132,7 @@ unsigned char ucTemp[16];
 		rc = write(file_i2c, ucTemp, 2);
 		if (rc != 2) {};
 	} // BMI160
-	else // MPU6050
+	else if (iType == TYPE_MPU6050)
 	{
 		ucTemp[0] = 0x75; // get ID
 		rc = write(file_i2c, ucTemp, 1);
@@ -151,6 +151,24 @@ unsigned char ucTemp[16];
 		ucTemp[1] = 0x00; // disable sleep mode
 		rc = write(file_i2c, ucTemp, 2);
 		if (rc < 0) {};
+	} else if (iType == TYPE_LIS3DH)
+	{
+                ucTemp[0] = 0x20; // CTRL_REG1
+                ucTemp[1] = 0x77; // Turn on the sensor with ODR = 400Hz normal mode.
+                write(file_i2c, ucTemp, 2);
+                // High res & BDU enabled
+                ucTemp[0] = 0x23; // CTRL_REG4
+                ucTemp[1] = 0x88;
+                write(file_i2c, ucTemp, 2);
+                // DRDY on INT1
+                ucTemp[0] = 0x22; // CTRL_REG3
+                ucTemp[1] = 0x10;
+                write(file_i2c, ucTemp, 2);
+
+                // enable adcs
+                ucTemp[0] = 0x1f; // TEMP_CFG_REG
+                ucTemp[1] = 0x80;
+                write(file_i2c, ucTemp, 2);
 	}
 	return 0;
 
@@ -235,15 +253,17 @@ int i,rc, x, y, z;
 		ucTemp[0] = 0x32; // start of axis data
 	else if (iType == TYPE_BMI160)
 		ucTemp[0] = 0x12;
-	else // MPU6050
+	else if (iType == TYPE_MPU6050)
 		ucTemp[0] = 0x3b;
+	else if (iType == TYPE_LIS3DH)
+		ucTemp[0] = 0xa8;
 	rc = write(file_i2c, ucTemp, 1); // write address of register to read
 	i = read(file_i2c, ucTemp, 6);
 	if (rc < 0 || i != 6)
 	{
 		return -1; // something went wrong
 	}
-	if (iType == TYPE_LSM9DS1 || iType == TYPE_ADXL345 || iType == TYPE_BMI160)
+	if (iType == TYPE_LSM9DS1 || iType == TYPE_ADXL345 || iType == TYPE_BMI160 || iType == TYPE_LIS3DH)
 	{
 		x = (ucTemp[1] << 8) + ucTemp[0];
 		y = (ucTemp[3] << 8) + ucTemp[2];

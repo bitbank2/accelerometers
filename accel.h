@@ -38,9 +38,13 @@ int accelReadGValues(int *X, int *Y, int *Z);
 //
 // Currently supported devices
 //
-#define TYPE_ADXL345 1
-#define TYPE_MPU6050 2
-#define TYPE_LSM9DS1 3
-#define TYPE_BMI160  4
+enum {
+      TYPE_ADXL345 = 1,
+      TYPE_MPU6050,
+      TYPE_LSM9DS1,
+      TYPE_BMI160,
+      TYPE_LIS3DH,
+      TYPE_COUNT
+};
 
 #endif // __ACCEL__

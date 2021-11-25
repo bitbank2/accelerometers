@@ -119,6 +119,7 @@ unsigned char ucTemp[16];
                 if (rc < 0 || i != 1 || ucTemp[0] != 0xD1)
                 {
                         printf("Error, ID doesn't match 0xD1; wrong device?\n");
+			printf("value read = 0x%02x\n", ucTemp[0]);
                         close(file_i2c);
                         file_i2c = -1;
                         return -1;
@@ -153,6 +154,17 @@ unsigned char ucTemp[16];
 		if (rc < 0) {};
 	} else if (iType == TYPE_LIS3DH)
 	{
+		ucTemp[0] = 0x0f; // WHO_AM_I
+		rc = write(file_i2c, ucTemp, 1);
+		i = read(file_i2c, ucTemp, 1);
+		if (rc < 0 || i != 1 || ucTemp[0] != 0x33)
+		{
+			printf("Error, ID doesn't match 0x33; wrong device?\n");
+			printf("Value read = %02x\n", ucTemp[0]);
+			close(file_i2c);
+			file_i2c = -1;
+			return -1;
+		}
                 ucTemp[0] = 0x20; // CTRL_REG1
                 ucTemp[1] = 0x77; // Turn on the sensor with ODR = 400Hz normal mode.
                 write(file_i2c, ucTemp, 2);

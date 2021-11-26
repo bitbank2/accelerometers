@@ -44,6 +44,7 @@ enum {
       TYPE_LSM9DS1,
       TYPE_BMI160,
       TYPE_LIS3DH,
+      TYPE_LSM6DS3,
       TYPE_COUNT
 };
 

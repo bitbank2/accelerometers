@@ -111,7 +111,28 @@ unsigned char ucTemp[16];
 		rc = write(file_i2c, ucTemp, 2);
 		if (rc != 2) {};
 		}
-	else if (iType == TYPE_BMI160)
+	else if (iType == TYPE_LSM6DS3)
+	{
+                ucTemp[0] = 0x0f; // get WHO_AM_I
+                rc = write(file_i2c, ucTemp, 1);
+                i = read(file_i2c, ucTemp, 1);
+                if (rc < 0 || i != 1 || ucTemp[0] != 0x69)
+                {
+                        printf("Error, ID doesn't match 0x69; wrong device?\n");
+			printf("value read = 0x%02x\n", ucTemp[0]);
+                        close(file_i2c);
+                        file_i2c = -1;
+                        return -1;
+                }
+		ucTemp[0] = 0x10; // accelerometer rate+power control
+		ucTemp[1] = 0x10; // lowest data rate (12.5) and default range
+		rc = write(file_i2c, ucTemp, 2);
+		ucTemp[0] = 0x11; // gyroscope rate+power control
+		ucTemp[1] = 0x10; // lowest  rate, default range
+		rc = write(file_i2c, ucTemp, 2);
+		if (rc != 2) {};
+	} // LSM6DS3
+else if (iType == TYPE_BMI160)
 	{
                 ucTemp[0] = 0x00; // get CHIPID
                 rc = write(file_i2c, ucTemp, 1);
@@ -212,6 +233,8 @@ int i,rc, x, y, z;
 		return -1; // ADXL345 doesn't have a gyroscope
 	if (iType == TYPE_LSM9DS1)
 		ucTemp[0] = 0x18;
+	else if (iType == TYPE_LSM6DS3)
+		ucTemp[0] = 0x22;
 	else if (iType == TYPE_BMI160)
 		ucTemp[0] = 0xc;
 	else // MPU6050
@@ -222,7 +245,7 @@ int i,rc, x, y, z;
 	{
 		return -1; // something went wrong
 	}
-	if (iType == TYPE_LSM9DS1 || iType == TYPE_BMI160)
+	if (iType == TYPE_LSM9DS1 || iType == TYPE_LSM6DS3 || iType == TYPE_BMI160)
 	{
 		x = (ucTemp[1] << 8) + ucTemp[0];
 		y = (ucTemp[3] << 8) + ucTemp[2];
@@ -259,7 +282,7 @@ int i,rc, x, y, z;
 	if (X == NULL && Y == NULL && Z == NULL)
 		return -1; // nothing to do
 
-	if (iType == TYPE_LSM9DS1)
+	if (iType == TYPE_LSM9DS1 || iType == TYPE_LSM6DS3)
 		ucTemp[0] = 0x28;
 	else if (iType == TYPE_ADXL345)
 		ucTemp[0] = 0x32; // start of axis data
@@ -275,7 +298,7 @@ int i,rc, x, y, z;
 	{
 		return -1; // something went wrong
 	}
-	if (iType == TYPE_LSM9DS1 || iType == TYPE_ADXL345 || iType == TYPE_BMI160 || iType == TYPE_LIS3DH)
+	if (iType == TYPE_LSM9DS1 || iType == TYPE_LSM6DS3 || iType == TYPE_ADXL345 || iType == TYPE_BMI160 || iType == TYPE_LIS3DH)
 	{
 		x = (ucTemp[1] << 8) + ucTemp[0];
 		y = (ucTemp[3] << 8) + ucTemp[2];
